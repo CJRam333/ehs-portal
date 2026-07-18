@@ -1,0 +1,7 @@
+[17:19:29] Workdir: E:\CJR_Projects\ehs-portal
+[17:19:29] Phases to run: phase0
+[17:19:29] === phase0 — attempt 1/3 ===
+[17:19:29] Invoking Claude Code (headless)...
+[17:25:21] Running acceptance test: phase0.test.sh
+[17:25:33] phase0 PASSED on attempt 1.
+[17:25:33] All requested phases completed successfully.

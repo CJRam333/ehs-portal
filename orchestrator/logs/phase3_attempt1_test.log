@@ -1,0 +1,62 @@
+== Build sanity: frontend compiles ==
+
+> ehs-portal-frontend@0.0.0 build
+> tsc -b && vite build
+
+[36mvite v5.4.21 [32mbuilding for production...[36m[39m
+transforming...
+[32m✓[39m 43 modules transformed.
+rendering chunks...
+computing gzip size...
+[2mdist/[22m[32mindex.html                 [39m[1m[2m  0.47 kB[22m[1m[22m[2m │ gzip:  0.30 kB[22m
+[2mdist/[22m[35massets/index-BEtcU0kn.css  [39m[1m[2m  2.70 kB[22m[1m[22m[2m │ gzip:  1.01 kB[22m
+[2mdist/[22m[36massets/index-B4b6m5mp.js   [39m[1m[2m171.95 kB[22m[1m[22m[2m │ gzip: 55.60 kB[22m
+[32m✓ built in 3.30s[39m
+== E2E: identity gate + Step 1 details + resume ==
+== Starting backend ==
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.5)
+
+2026-07-17T10:48:42.151+05:30  INFO 17888 --- [           main] com.company.ehs.EhsApplication           : Starting EhsApplication using Java 21.0.7 with PID 17888 (E:\CJR_Projects\ehs-portal\backend\target\classes started by ramesh.a in E:\CJR_Projects\ehs-portal\backend)
+2026-07-17T10:48:42.159+05:30  INFO 17888 --- [           main] com.company.ehs.EhsApplication           : No active profile set, falling back to 1 default profile: "default"
+2026-07-17T10:48:44.587+05:30  INFO 17888 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-07-17T10:48:44.794+05:30  INFO 17888 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 179 ms. Found 2 JPA repository interfaces.
+2026-07-17T10:48:46.730+05:30  INFO 17888 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2026-07-17T10:48:46.818+05:30  INFO 17888 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-07-17T10:48:46.819+05:30  INFO 17888 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.31]
+2026-07-17T10:48:47.060+05:30  INFO 17888 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-07-17T10:48:47.063+05:30  INFO 17888 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 4738 ms
+2026-07-17T10:48:47.918+05:30  INFO 17888 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-07-17T10:48:48.493+05:30  INFO 17888 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@7fe8c7db
+2026-07-17T10:48:48.499+05:30  INFO 17888 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-07-17T10:48:48.674+05:30  INFO 17888 --- [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:mysql://127.0.0.1:3306/ehs (MySQL 8.0)
+2026-07-17T10:48:49.034+05:30  INFO 17888 --- [           main] o.f.core.internal.command.DbValidate     : Successfully validated 1 migration (execution time 00:00.092s)
+2026-07-17T10:48:49.074+05:30  INFO 17888 --- [           main] o.f.core.internal.command.DbMigrate      : Current version of schema `ehs`: 1
+2026-07-17T10:48:49.085+05:30  INFO 17888 --- [           main] o.f.core.internal.command.DbMigrate      : Schema `ehs` is up to date. No migration necessary.
+2026-07-17T10:48:49.357+05:30  INFO 17888 --- [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-07-17T10:48:49.572+05:30  INFO 17888 --- [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.5.3.Final
+2026-07-17T10:48:49.713+05:30  INFO 17888 --- [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-07-17T10:48:50.892+05:30  INFO 17888 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-07-17T10:48:51.098+05:30  WARN 17888 --- [           main] org.hibernate.orm.deprecation            : HHH90000025: MySQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-07-17T10:48:54.505+05:30  INFO 17888 --- [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-07-17T10:48:54.616+05:30  INFO 17888 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-07-17T10:48:55.929+05:30  WARN 17888 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-07-17T10:48:57.009+05:30  INFO 17888 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2026-07-17T10:48:57.033+05:30  INFO 17888 --- [           main] com.company.ehs.EhsApplication           : Started EhsApplication in 16.368 seconds (process running for 17.775)
+2026-07-17T10:48:58.576+05:30  INFO 17888 --- [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-07-17T10:48:58.576+05:30  INFO 17888 --- [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-07-17T10:48:58.579+05:30  INFO 17888 --- [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 3 ms
+  backend is up
+== Starting frontend dev server ==
+  frontend is up
+== Ensuring Playwright + browser are installed ==
+FAIL: could not install Playwright
+== Tearing down servers ==
+FAIL: phase 3 Playwright tests failed

@@ -1,0 +1,21 @@
+Everything verified. Phase 2 is complete.
+
+## Summary
+
+I implemented the full REST API and the Phase 2 acceptance test passes end-to-end against MySQL (`identify → create → save details → save checklist → resume → submit`), with data persisted correctly (report `SUBMITTED`, 30 seeded checklist rows, 2 upserted answers).
+
+**New files**
+- `checklist/ChecklistTemplate.java` — single source of truth: the 30 items (section, code, label) used by both seed logic and the template endpoint.
+- `dto/` — request DTOs with Bean Validation (`IdentifyRequest`, `CreateReportRequest`, `DetailsRequest`, `ChecklistAnswerRequest`) and response DTOs (`ReportResponse`, `ChecklistItemResponse`, `IdentifyResponse`, `ChecklistTemplateResponse`). Response DTOs avoid the entity's bidirectional JSON recursion.
+- `service/ReportService.java` — transactional business logic; JaroWinkler similarity for the identify mismatch check (`< 0.85`), checklist seeding, upsert-by-code (ignores unknown codes), submit validation.
+- `web/ReportController.java` + `ChecklistTemplateController.java` — all 7 endpoints under `/api`.
+- `web/GlobalExceptionHandler.java` (`@RestControllerAdvice`) + `ApiError` — clean 400 (validation/malformed), 404 (not found), 409 (already submitted) bodies.
+- `exception/` — `NotFoundException`, `BadRequestException`, `ConflictException`.
+
+**Two Phase-1 domain reconciliations you should know about** — the frozen Phase 1 enums didn't match what Phase 2 (the stated source of truth) requires, so I updated them:
+1. `ChecklistSection` → `PPE, BEHAVIOUR, TOOLS, RISK, PROCEDURES` (was generic safety categories). The entity stores `section` as this enum, so it had to match the template's sections.
+2. `ReporterCategory` → added `STAFF` (the acceptance test posts `"reporterCategory":"STAFF"`, which would otherwise 400 on enum deserialization).
+
+Both columns are `VARCHAR`, so no migration change was needed. Flag for you: if the `report.status` column ever needs longer values, note it's `VARCHAR(12)` — fine for `SUBMITTED`.
+
+One design note: I return the report DTO with DB-generated `created_at`/`updated_at` by doing `saveAndFlush` + `refresh` after each mutation, so timestamps are accurate in responses (the DB handles the `updated_at` bump via `ON UPDATE CURRENT_TIMESTAMP`).

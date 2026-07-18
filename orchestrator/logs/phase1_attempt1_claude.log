@@ -1,0 +1,26 @@
+Phase 1 is complete and verified against MySQL. Everything the task specified already exists in the repo and is correct — I confirmed it compiles, boots far enough to run Flyway, and passes Hibernate's `validate` check.
+
+## Verification results
+
+**Boot + Flyway:** My app instance connected to MySQL, ran Flyway, and passed Hibernate `ddl-auto=validate` (the log reached Tomcat startup, which happens *after* migration and entity validation). It only stopped because port 8080 is held by a leftover instance from a prior session — not a code problem. The `HHH000*` lines in the log are all informational (version/cache/JTA), no schema-validation errors.
+
+**Schema checks in MySQL (`ehs` db):**
+| Acceptance item | Result |
+|---|---|
+| Flyway V1 recorded | `version=1, description=init, success=1` ✓ |
+| `report` + `checklist_item` tables exist | ✓ |
+| FK `fk_checklist_report` with `ON DELETE CASCADE` | ✓ (delete_rule=CASCADE) |
+| Unique `uq_report_item (report_id, item_code)` | ✓ |
+| Index on `employee_id` | ✓ (`idx_report_employee_id`) |
+| Engine / charset | InnoDB / utf8mb4 on both ✓ |
+
+**Code matches spec exactly:**
+- `V1__init.sql` — both tables, all columns, FK, unique key, index, InnoDB/utf8mb4.
+- Entities `Report` / `ChecklistItem` — `@OneToMany(cascade=ALL, orphanRemoval=true)`, `GenerationType.IDENTITY`, enums `@Enumerated(STRING)`.
+- Enums `ReportType`, `ReporterCategory`, `Severity`, `ReportStatus`, `ChecklistSection`.
+- `ReportRepository` has the exact `findFirstByEmployeeIdAndStatusOrderByUpdatedAtDesc(...)`; `ChecklistItemRepository` present.
+- `pom.xml` includes flyway-core, flyway-mysql, mysql-connector-j, and commons-text (staged for Phase 2 fuzzy matching).
+
+No changes were needed — Phase 1 acceptance is satisfied.
+
+Note: there's a stray Spring Boot instance already listening on port 8080. It's harmless for Phase 1, but you may want to stop it before Phase 2 so a fresh build can bind the port.

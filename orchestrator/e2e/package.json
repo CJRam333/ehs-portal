@@ -1,0 +1,16 @@
+{
+  "name": "ehs-e2e",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Playwright end-to-end tests for the EHS Reporting Portal",
+  "scripts": {
+    "test": "playwright test",
+    "test:phase3": "playwright test tests/phase3_gate_details.spec.ts",
+    "test:phase4": "playwright test tests/phase4_checklist_submit.spec.ts",
+    "test:phase5": "playwright test tests/phase5_full_journey.spec.ts",
+    "install:browsers": "playwright install chromium"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.47.0"
+  }
+}

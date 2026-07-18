@@ -1,0 +1,78 @@
+### EHS Reporting Portal — sample API calls
+#
+# A ready-to-run walk-through of the full capture flow, in order:
+#   identify -> create -> save details -> load template -> save checklist -> submit
+#
+# How to use:
+#   - VS Code: install the "REST Client" extension, then click "Send Request"
+#     above each block.
+#   - JetBrains IDEs: open this file and use the inline "Run" gutter icon.
+#   - The @reportId variable is captured from the create response, so run the
+#     requests top to bottom.
+#
+# The backend listens on http://localhost:8080 (no auth). Start it with
+# `mvn spring-boot:run` from backend/ — see README.md.
+
+@host = http://localhost:8080
+
+### 1. Identify — is there a resumable draft for this person?
+# Returns { resume: false } for a new reporter, or { resume: true, report, mismatchWarning? }.
+POST {{host}}/api/identify
+Content-Type: application/json
+
+{
+  "name": "Asha Rao",
+  "employeeId": "E1024",
+  "designation": "Line Operator"
+}
+
+### 2. Create a new report (Step-0). Captures the id used by every later call.
+# @name createReport
+POST {{host}}/api/reports
+Content-Type: application/json
+
+{
+  "name": "Asha Rao",
+  "employeeId": "E1024",
+  "designation": "Line Operator"
+}
+
+@reportId = {{createReport.response.body.id}}
+
+### 3. Save Step-1 details (partial or complete; same payload backs Save and Next).
+PUT {{host}}/api/reports/{{reportId}}/details
+Content-Type: application/json
+
+{
+  "reportType": "NEAR_MISS",
+  "shift": "A",
+  "reporterCategory": "STAFF",
+  "severity": "MEDIUM",
+  "location": "Packing Bay 3",
+  "eventDate": "2026-07-17",
+  "eventTime": "14:30",
+  "reportDescription": "Pallet stacked above the safe height near the walkway.",
+  "correctiveAction": "Restacked to safe height; briefed the team.",
+  "hodComments": "Verified on shift.",
+  "reporterName": "Asha Rao"
+}
+
+### 4. Fetch the canonical checklist template (sections + items, in display order).
+GET {{host}}/api/checklist-template
+
+### 5. Save Step-2 checklist answers (YES / NO / null to clear). Unknown codes are ignored.
+PUT {{host}}/api/reports/{{reportId}}/checklist
+Content-Type: application/json
+
+[
+  { "itemCode": "PPE_01", "answer": "YES" },
+  { "itemCode": "PPE_02", "answer": "NO" },
+  { "itemCode": "BEH_01", "answer": "YES" },
+  { "itemCode": "TOOL_01", "answer": null }
+]
+
+### 6. Submit the report (DRAFT -> SUBMITTED). Re-submitting returns 409 Conflict.
+POST {{host}}/api/reports/{{reportId}}/submit
+
+### 7. Read the report back (any time) to inspect saved state.
+GET {{host}}/api/reports/{{reportId}}

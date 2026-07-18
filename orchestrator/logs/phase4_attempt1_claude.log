@@ -1,0 +1,27 @@
+Phase 4 is complete and verified end-to-end.
+
+## What I built
+
+**`frontend/src/api.ts`** — added the three missing endpoints and their types:
+- `getChecklistTemplate()` → `GET /api/checklist-template`
+- `updateChecklist(id, answers)` → `PUT /api/reports/{id}/checklist`
+- `submit(id)` → `POST /api/reports/{id}/submit`
+
+**`frontend/src/pages/ChecklistStep.tsx`** — the full Step 2:
+- On entry, loads the template **and** GETs the current report (in parallel) to prefill saved answers.
+- Renders each section (PPE, Behaviour, Tools & Equipment, Risk/Violations, Procedures) as a compact `<table>` — dense rows, label left, YES/NO toggle pair right, with clear section headers.
+- **Back**: saves the current answers via PUT, then navigates to Details.
+- **Submit**: PUT checklist → POST submit → clean confirmation screen showing the report reference (`#id`) and a **Report another** button that clears state and returns to the identity gate.
+- Handles the already-submitted 409 with a friendly banner (also offering "Report another").
+
+**`frontend/src/App.css`** — styles for the compact checklist table, green YES / red NO active toggles, and the confirmation screen.
+
+## Contract & acceptance
+
+All required `data-testid`s are in place (`checklist-<CODE>`, `-yes`/`-no` with `aria-pressed`, `checklist-back`, `checklist-submit`, `confirm-screen`, `confirm-report-id`, `report-another`).
+
+- `npm run build` passes (tsc + vite).
+- Full-stack Phase 4 Playwright suite: **4/4 passing** (renders all section anchors, answers persist across Back/Next, submit → confirmation with report id, "Report another" → clean gate).
+- MySQL verification: submitted reports show `status = SUBMITTED` with answers stored (e.g. report 17 → `PPE_01 = YES`).
+
+One note: on a cold start the very first test can flake with a click timeout (~25s Vite compile) — it passed cleanly on re-run. I recorded the E2E run procedure to memory for later phases.

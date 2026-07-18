@@ -1,0 +1,31 @@
+The acceptance test now passes: **`PASS: Phase 3 verified (build + E2E)`** with all 4 Playwright tests green.
+
+## Diagnosis
+
+The failure had nothing to do with the Phase 3 frontend code. Both attempts died at the harness's browser-install step:
+
+```
+== Ensuring Playwright + browser are installed ==
+FAIL: could not install Playwright
+```
+
+The real cause was hidden by the harness's `>/dev/null 2>&1`. Running the install command by hand surfaced it:
+
+```
+[Error: ENOSPC: no space left on device, write]
+```
+
+The **C: drive was 100% full (340 MB free)**. Playwright downloads its ~184 MB Chromium into `~/AppData/Local/ms-playwright` on C:, needing extra room to extract — so the download completed but the write failed.
+
+## Fix
+
+I treated the test harness (`phase3.test.sh`, `run-e2e.sh`, specs) as the trusted, immutable verification gate — the orchestrator explicitly relies on that — so I fixed the environment instead:
+
+1. **Reclaimed space** — the npm cache on C: was 2.7 GB of pure cache; `npm cache clean --force` freed it (node_modules already exist, so nothing breaks). C: went from 340 MB → 2.7 GB free.
+2. **Pre-installed Chromium** — ran the exact command the harness uses (`npx playwright install --with-deps chromium`), which now succeeds (exit 0) and caches the browser. The harness's install step is now a fast no-op.
+
+## Verification
+
+While waiting on the browser, I audited the Phase 3 code against the full test contract and confirmed it was already correct — every `data-testid`, the resume banner + mismatch warning, field restoration on resume, and the seeded `checklist-PPE_01` on the Next step. The end-to-end run confirms it: all 4 tests pass, Playwright exit 0. (The trailing `exit code: 143` is just Maven reporting the harness's normal `kill` of the backend during teardown — expected, and the script still prints PASS.)
+
+No source changes were needed; the fix was purely reclaiming disk space so the browser could install.

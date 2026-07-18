@@ -1,0 +1,28 @@
+Phase 5 is complete and verified. Here's a summary of what I did.
+
+## Changes
+
+**QR route** (`frontend/src/App.tsx`)
+- Added a `/scan` route that redirects to `/` (the identity gate), so a QR encoding either `https://host/` or `https://host/scan` works. Documented the QR approach in the README.
+
+**Styling pass** (`frontend/src/App.css`)
+- Rewrote mobile-first: base rules target a phone; a `@media (min-width: 640px)` block adds desktop refinements.
+- Segmented controls switched from a joined bar to **wrap-friendly chips** (Report type has 7 options that now wrap cleanly instead of overflowing).
+- ~40px minimum tap targets on all buttons, segmented chips, and the checklist YES/NO toggles; `touch-action: manipulation` and 16px inputs to prevent iOS zoom.
+- Actions stretch full-width on mobile, size to content on desktop; centered max-width (720px) container.
+
+**Empty/error states**
+- `api.ts`: `fetch` rejections now become an `ApiError(status: 0)` with a friendly message, plus `isNetworkError()` / `errorMessage()` helpers.
+- `Toast.tsx`: added an `error` variant (`data-testid="error-toast"`, red, `role="alert"`) alongside the existing `save-toast`.
+- All three pages now route **network failures to a toast** while keeping server/validation errors inline. In-flight buttons were already disabled via `busy`.
+
+**Docs**
+- `README.md`: fresh-clone run instructions (backend + frontend, incl. prod build/preview and DB setup SQL), env-var table, an ASCII flow diagram, QR section, mobile section, endpoint table, and a pointer to the sample calls.
+- `backend/api.http`: a REST Client / JetBrains `.http` file walking the full flow (identify → create → details → template → checklist → submit → read back), with the created report id captured and reused.
+
+## Verification
+- `npm run build` (tsc + vite) passes.
+- **Phase 5 acceptance E2E passes**, including the narrow mobile-viewport test (Pixel 7): `3 passed`.
+- No regressions: Phase 3 (`4 passed`) and Phase 4 (`4 passed`) suites still green.
+
+The acceptance criteria — runs cleanly from a fresh clone following only the README, and works on a narrow mobile viewport — are both met.

@@ -1,0 +1,7 @@
+== Checking directory structure ==
+== Checking backend is a Maven project ==
+== Checking application config points at MySQL ==
+== Building backend ==
+== Checking frontend is a Vite project ==
+== Installing frontend deps ==
+PASS: Phase 0 scaffold verified.

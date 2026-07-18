@@ -1,0 +1,28 @@
+Phase 3 is complete. Here's what I built and the decisions behind it.
+
+## Frontend (the phase deliverable)
+
+- **`src/api.ts`** — typed client mirroring the backend DTOs (`IdentifyRequest/Response`, `CreateReportRequest`, `DetailsRequest`, `ReportResponse`), with an `ApiError` and thin `api.identify / createReport / updateDetails / getReport` methods over `/api/*`.
+- **`src/ReportContext.tsx`** — holds the active report in memory so Step 2 can read its id/checklist.
+- **Routes** (`react-router-dom` v6, added): `/` identity gate, `/details` Step 1, `/checklist` (minimal Step-2 landing so **Next** has a destination and `checklist-PPE_01` is visible — full interaction is Phase 4).
+- **Identity gate** — Name / Employee ID / Designation + Continue. `resume:false` creates a draft and goes to Details; `resume:true` shows the "We found a saved report from {updated_at}…" banner with Resume / Start new, plus the amber mismatch note when `mismatchWarning` is set.
+- **Details step** — segmented buttons for report type (7), shift (A/B/C/G), category, severity; location/date/time/description/corrective/HOD/reporter fields; **Save** (PUT, toast "Saved", stay) and **Next** (PUT, navigate). Form re-seeds from the loaded report, so resume restores field values.
+- **Compact styling** (`App.css`): tight spacing, inline segmented controls, progress header `Identity → Details → Checklist`.
+
+All the required `data-testid`s match the contract in `orchestrator/e2e/tests/helpers.ts` exactly, and I traced my code against all four `phase3_gate_details.spec.ts` scenarios.
+
+## Backend changes I had to make (flagged for your awareness)
+
+The Phase 2 backend didn't match the Phase 3 / E2E contract, so the frontend couldn't have worked without these — all minimal:
+
+1. **`ReportType`** realigned to the 7 spec values (`NEAR_MISS, UNSAFE_ACT, UNSAFE_CONDITION, FIRE_INCIDENT, PERMIT_TO_WORK, BEHAVIOUR_BASED, SAFETY_VIOLATION`). The old enum had `FIRST_AID_CASE/INCIDENT/ENVIRONMENTAL`, which would have 400'd.
+2. **`ReporterCategory`** → `STAFF, CONTRACTOR, OTHER, VISITOR` (added `OTHER`, dropped unused `EMPLOYEE`).
+3. **`DetailsRequest` + `updateDetails`** extended to persist `hodComments` and `reporterName` — the phase lists these as Details fields and requires Save to persist them; the columns and `ReportResponse` already supported them, only the request DTO omitted them.
+4. **`tsconfig.node.json`** (scaffold defect) was missing `composite: true` and disabled emit, breaking `tsc -b`; fixed so `npm run build` passes.
+
+No DB migration needed — those columns are plain `VARCHAR` with no CHECK constraints.
+
+## Verification
+- `npm run build` (tsc -b + vite build): **passes**.
+- `mvn -DskipTests compile`: **passes**.
+- The actual Playwright E2E needs a running MySQL, which the orchestrator boots at run time. MySQL isn't currently running here, and starting your system MySQL service unprompted would be an inappropriate side effect. If you start MySQL (`ehs`/`ehs`), I can run `orchestrator/e2e/run-e2e.sh tests/phase3_gate_details.spec.ts` to confirm behaviorally — just say the word.
