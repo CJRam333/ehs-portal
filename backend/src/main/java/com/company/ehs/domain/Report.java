@@ -1,20 +1,25 @@
 package com.company.ehs.domain;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "report")
@@ -24,18 +29,34 @@ public class Report {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "employee_id", nullable = false, length = 50)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "person_kind", nullable = false, length = 20)
+    private PersonKind personKind = PersonKind.EMPLOYEE;
+
+    // Nullable: non-employees have no employee id.
+    @Column(name = "employee_id", length = 50)
     private String employeeId;
 
     @Column(name = "employee_name", nullable = false, length = 150)
     private String employeeName;
 
-    @Column(name = "designation", nullable = false, length = 150)
+    // Nullable: only asked on the employee path.
+    @Column(name = "designation", length = 150)
     private String designation;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "report_type", length = 40)
-    private ReportType reportType;
+    @Column(name = "non_employee_type", length = 20)
+    private NonEmployeeType nonEmployeeType;
+
+    @Column(name = "non_employee_other_desc", length = 255)
+    private String nonEmployeeOtherDesc;
+
+    // Up to 3 report types, stored in the child table report_type(report_id, type).
+    @ElementCollection
+    @CollectionTable(name = "report_type", joinColumns = @JoinColumn(name = "report_id"))
+    @Column(name = "type", length = 40)
+    @Enumerated(EnumType.STRING)
+    private Set<ReportType> reportTypes = new LinkedHashSet<>();
 
     @Column(name = "shift", length = 1)
     private Character shift;
@@ -62,12 +83,6 @@ public class Report {
 
     @Column(name = "corrective_action", columnDefinition = "TEXT")
     private String correctiveAction;
-
-    @Column(name = "hod_comments", columnDefinition = "TEXT")
-    private String hodComments;
-
-    @Column(name = "reporter_name", length = 150)
-    private String reporterName;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 12)
@@ -103,6 +118,14 @@ public class Report {
         this.id = id;
     }
 
+    public PersonKind getPersonKind() {
+        return personKind;
+    }
+
+    public void setPersonKind(PersonKind personKind) {
+        this.personKind = personKind;
+    }
+
     public String getEmployeeId() {
         return employeeId;
     }
@@ -127,12 +150,28 @@ public class Report {
         this.designation = designation;
     }
 
-    public ReportType getReportType() {
-        return reportType;
+    public NonEmployeeType getNonEmployeeType() {
+        return nonEmployeeType;
     }
 
-    public void setReportType(ReportType reportType) {
-        this.reportType = reportType;
+    public void setNonEmployeeType(NonEmployeeType nonEmployeeType) {
+        this.nonEmployeeType = nonEmployeeType;
+    }
+
+    public String getNonEmployeeOtherDesc() {
+        return nonEmployeeOtherDesc;
+    }
+
+    public void setNonEmployeeOtherDesc(String nonEmployeeOtherDesc) {
+        this.nonEmployeeOtherDesc = nonEmployeeOtherDesc;
+    }
+
+    public Set<ReportType> getReportTypes() {
+        return reportTypes;
+    }
+
+    public void setReportTypes(Set<ReportType> reportTypes) {
+        this.reportTypes = reportTypes;
     }
 
     public Character getShift() {
@@ -197,22 +236,6 @@ public class Report {
 
     public void setCorrectiveAction(String correctiveAction) {
         this.correctiveAction = correctiveAction;
-    }
-
-    public String getHodComments() {
-        return hodComments;
-    }
-
-    public void setHodComments(String hodComments) {
-        this.hodComments = hodComments;
-    }
-
-    public String getReporterName() {
-        return reporterName;
-    }
-
-    public void setReporterName(String reporterName) {
-        this.reporterName = reporterName;
     }
 
     public ReportStatus getStatus() {

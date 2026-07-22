@@ -43,7 +43,7 @@ IS_WINDOWS = os.name == "nt"
 # ---- phase registry -------------------------------------------------------
 # Ordered list of phase ids. Each id maps to phases/<id>.prompt.md and
 # phases/<id>.test.sh. Rename/add freely; order here is the run order.
-PHASES = ["phase0", "phase1", "phase2", "phase3", "phase4", "phase5", "phase6"]
+PHASES = ["phase0", "phase1", "phase2", "phase3", "phase4", "phase5"]
 
 # ANSI colors — disabled unless the terminal is a TTY that renders them.
 # Set ORCH_COLOR=1 to force on. Avoids garbled codes in some Windows shells.

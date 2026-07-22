@@ -13,8 +13,11 @@ import {
 import { useReport } from '../ReportContext'
 import type { ReportResponse } from '../api'
 import { ProgressHeader } from '../components/ProgressHeader'
-import { Segmented, type SegmentedOption } from '../components/Segmented'
+import { Segmented, MultiSegmented, type SegmentedOption } from '../components/Segmented'
 import { Toast } from '../components/Toast'
+import { PageTransition, Reveal, TapButton } from '../components/motion'
+
+const MAX_TYPES = 3
 
 const REPORT_TYPES: SegmentedOption<ReportType>[] = [
   { value: 'NEAR_MISS', label: 'Near miss', testId: 'report-type-NEAR_MISS' },
@@ -62,37 +65,50 @@ function DetailsForm({ report }: { report: ReportResponse }) {
   const navigate = useNavigate()
   const { setReport } = useReport()
 
-  const [reportType, setReportType] = useState<ReportType | null>(report.reportType)
+  const [reportTypes, setReportTypes] = useState<ReportType[]>(report.reportTypes ?? [])
   const [shift, setShift] = useState<Shift | null>(report.shift)
   const [category, setCategory] = useState<ReporterCategory | null>(report.reporterCategory)
   const [severity, setSeverity] = useState<Severity | null>(report.severity)
-  const [location, setLocation] = useState(report.location ?? '')
   const [eventDate, setEventDate] = useState(report.eventDate ?? '')
   const [eventTime, setEventTime] = useState(toTimeInput(report.eventTime))
   const [description, setDescription] = useState(report.reportDescription ?? '')
   const [corrective, setCorrective] = useState(report.correctiveAction ?? '')
-  const [hodComments, setHodComments] = useState(report.hodComments ?? '')
-  const [reporterName, setReporterName] = useState(report.reporterName ?? '')
 
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [descriptionError, setDescriptionError] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
   const [netError, setNetError] = useState<string | null>(null)
 
+  function toggleType(value: ReportType) {
+    setReportTypes((prev) => {
+      if (prev.includes(value)) return prev.filter((v) => v !== value)
+      if (prev.length >= MAX_TYPES) return prev // cap reached — ignore
+      return [...prev, value]
+    })
+  }
+
   function buildPayload(): DetailsRequest {
     return {
-      reportType,
+      reportTypes,
       shift,
       reporterCategory: category,
       severity,
-      location: location.trim() || null,
       eventDate: eventDate || null,
       eventTime: eventTime || null,
       reportDescription: description.trim() || null,
       correctiveAction: corrective.trim() || null,
-      hodComments: hodComments.trim() || null,
-      reporterName: reporterName.trim() || null,
     }
+  }
+
+  // Description is mandatory: block Save/Next and surface an inline error.
+  function requireDescription(): boolean {
+    if (!description.trim()) {
+      setDescriptionError(true)
+      return false
+    }
+    setDescriptionError(false)
+    return true
   }
 
   async function persist(): Promise<boolean> {
@@ -114,33 +130,41 @@ function DetailsForm({ report }: { report: ReportResponse }) {
   }
 
   async function handleSave() {
+    if (!requireDescription()) return
     if (await persist()) setToast('Saved')
   }
 
   async function handleNext() {
+    if (!requireDescription()) return
     if (await persist()) navigate('/checklist')
   }
 
   return (
-    <div className="app">
+    <PageTransition>
       <ProgressHeader current="details" />
       <h1>Report details</h1>
 
       <div className="form">
-        <Segmented label="Report type" options={REPORT_TYPES} value={reportType} onChange={setReportType} />
-        <Segmented label="Shift" options={SHIFTS} value={shift} onChange={setShift} />
-        <Segmented label="Reporter category" options={CATEGORIES} value={category} onChange={setCategory} />
-        <Segmented label="Severity" options={SEVERITIES} value={severity} onChange={setSeverity} />
+        <Reveal>
+          <MultiSegmented
+            label="Report type"
+            options={REPORT_TYPES}
+            values={reportTypes}
+            max={MAX_TYPES}
+            onToggle={toggleType}
+          />
+        </Reveal>
+        <Reveal>
+          <Segmented label="Shift" options={SHIFTS} value={shift} onChange={setShift} />
+        </Reveal>
+        <Reveal>
+          <Segmented label="Reporter category" options={CATEGORIES} value={category} onChange={setCategory} />
+        </Reveal>
+        <Reveal>
+          <Segmented label="Severity" options={SEVERITIES} value={severity} onChange={setSeverity} />
+        </Reveal>
 
-        <div className="row">
-          <label className="field grow">
-            <span className="field-label">Location</span>
-            <input
-              data-testid="details-location"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-            />
-          </label>
+        <Reveal className="row">
           <label className="field">
             <span className="field-label">Date</span>
             <input
@@ -159,51 +183,45 @@ function DetailsForm({ report }: { report: ReportResponse }) {
               onChange={(e) => setEventTime(e.target.value)}
             />
           </label>
-        </div>
+        </Reveal>
 
-        <label className="field">
-          <span className="field-label">Report description</span>
-          <textarea
-            data-testid="details-description"
-            rows={3}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-        </label>
+        <Reveal className="field">
+          <label className="field">
+            <span className="field-label">Report description *</span>
+            <textarea
+              data-testid="details-description"
+              rows={3}
+              value={description}
+              onChange={(e) => {
+                setDescription(e.target.value)
+                if (descriptionError && e.target.value.trim()) setDescriptionError(false)
+              }}
+              aria-invalid={descriptionError}
+            />
+          </label>
+          {descriptionError && (
+            <p className="error" data-testid="details-description-error">
+              Report description is required.
+            </p>
+          )}
+        </Reveal>
 
-        <label className="field">
-          <span className="field-label">Corrective action / suggestion</span>
-          <textarea
-            data-testid="details-corrective"
-            rows={3}
-            value={corrective}
-            onChange={(e) => setCorrective(e.target.value)}
-          />
-        </label>
-
-        <label className="field">
-          <span className="field-label">Sign of HOD with comments</span>
-          <textarea
-            data-testid="details-hod"
-            rows={2}
-            value={hodComments}
-            onChange={(e) => setHodComments(e.target.value)}
-          />
-        </label>
-
-        <label className="field">
-          <span className="field-label">Reporter’s name &amp; sign</span>
-          <input
-            data-testid="details-reporter"
-            value={reporterName}
-            onChange={(e) => setReporterName(e.target.value)}
-          />
-        </label>
+        <Reveal className="field">
+          <label className="field">
+            <span className="field-label">Corrective action / suggestion</span>
+            <textarea
+              data-testid="details-corrective"
+              rows={3}
+              value={corrective}
+              onChange={(e) => setCorrective(e.target.value)}
+            />
+          </label>
+        </Reveal>
 
         {error && <p className="error">{error}</p>}
 
         <div className="actions">
-          <button
+          <TapButton
             type="button"
             data-testid="details-save"
             className="btn btn-secondary"
@@ -211,8 +229,8 @@ function DetailsForm({ report }: { report: ReportResponse }) {
             onClick={handleSave}
           >
             Save
-          </button>
-          <button
+          </TapButton>
+          <TapButton
             type="button"
             data-testid="details-next"
             className="btn btn-primary"
@@ -220,12 +238,12 @@ function DetailsForm({ report }: { report: ReportResponse }) {
             onClick={handleNext}
           >
             Next
-          </button>
+          </TapButton>
         </div>
       </div>
 
       <Toast message={toast} onDone={() => setToast(null)} />
       <Toast message={netError} variant="error" onDone={() => setNetError(null)} />
-    </div>
+    </PageTransition>
   )
 }

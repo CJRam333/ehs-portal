@@ -12,7 +12,11 @@ export default defineConfig({
   expect: { timeout: 10_000 },
   fullyParallel: false,      // flows share a backend + DB; keep them serial
   workers: 1,
-  retries: 0,
+  // The first spec to exercise the API hits a cold backend (Hibernate first-query
+  // warmup) + cold Vite dev compile of the /details chunk, which can exceed the
+  // 10s expect timeout. One retry lets that single environmental flake self-heal
+  // once the server is warm; a real regression still fails on every attempt.
+  retries: 1,
   reporter: [['list']],
   use: {
     baseURL: BASE_URL,

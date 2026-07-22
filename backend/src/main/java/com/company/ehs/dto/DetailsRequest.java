@@ -5,22 +5,21 @@ import com.company.ehs.domain.ReporterCategory;
 import com.company.ehs.domain.Severity;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 /**
  * Body of {@code PUT /api/reports/{id}/details}: the Step-1 fields only. All
  * fields are optional so the same payload backs both "Save" (partial) and
- * "Next" (complete). Identity and checklist are not touched here.
+ * "Next" (complete). Identity, location and checklist are not touched here.
+ * {@code reportTypes} may hold up to 3 values (enforced in the service).
  */
 public record DetailsRequest(
-        ReportType reportType,
+        List<ReportType> reportTypes,
         String shift,
         ReporterCategory reporterCategory,
         Severity severity,
-        String location,
         LocalDate eventDate,
         LocalTime eventTime,
         String reportDescription,
-        String correctiveAction,
-        String hodComments,
-        String reporterName) {
+        String correctiveAction) {
 }

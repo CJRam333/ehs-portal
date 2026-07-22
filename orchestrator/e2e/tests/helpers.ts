@@ -8,38 +8,41 @@ import { Page, expect } from '@playwright/test';
  * If a selector below changes, update the prompt too so they stay in sync.
  */
 export const T = {
-  // Identity gate
+  // Identity gate — phase 6 branching
+  personKindEmployee: 'person-kind-employee',
+  personKindNonEmployee: 'person-kind-non-employee',
   identityName: 'identity-name',
   identityEmpId: 'identity-empid',
   identityDesignation: 'identity-designation',
+  identityLocation: 'identity-location',
   identityContinue: 'identity-continue',
+  nonempType: (v: string) => `nonemp-type-${v}`,     // CONTRACTOR/VISITOR/OTHER
+  nonempOtherDesc: 'nonemp-other-desc',
 
-  // Resume banner
+  // Resume banner (employee only)
   resumeBanner: 'resume-banner',
   resumeMismatchWarning: 'resume-mismatch-warning',
   resumeButton: 'resume-continue',
   resumeStartNew: 'resume-start-new',
 
-  // Step 1 - details
-  reportType: (v: string) => `report-type-${v}`,     // e.g. report-type-NEAR_MISS
-  shift: (v: string) => `shift-${v}`,                // shift-A
-  category: (v: string) => `category-${v}`,          // category-STAFF
-  severity: (v: string) => `severity-${v}`,          // severity-LOW
-  location: 'details-location',
+  // Step 1 - details (location/hod/reporter removed in phase 6)
+  reportType: (v: string) => `report-type-${v}`,     // multi-select, max 3
+  shift: (v: string) => `shift-${v}`,
+  category: (v: string) => `category-${v}`,
+  severity: (v: string) => `severity-${v}`,
   eventDate: 'details-date',
   eventTime: 'details-time',
   description: 'details-description',
+  descriptionError: 'details-description-error',
   correctiveAction: 'details-corrective',
-  hodComments: 'details-hod',
-  reporterName: 'details-reporter',
   detailsSave: 'details-save',
   detailsNext: 'details-next',
   saveToast: 'save-toast',
 
   // Step 2 - checklist
-  checklistItem: (code: string) => `checklist-${code}`,      // container for a row
-  checklistYes: (code: string) => `checklist-${code}-yes`,   // YES toggle
-  checklistNo: (code: string) => `checklist-${code}-no`,     // NO toggle
+  checklistItem: (code: string) => `checklist-${code}`,
+  checklistYes: (code: string) => `checklist-${code}-yes`,
+  checklistNo: (code: string) => `checklist-${code}-no`,
   checklistBack: 'checklist-back',
   checklistSubmit: 'checklist-submit',
 
@@ -49,6 +52,12 @@ export const T = {
   reportAnother: 'report-another',
 };
 
+// The exact location options the identity dropdown must offer (phase 6 change 1).
+export const LOCATIONS = [
+  'Kandlakoya', 'Kompally', 'Kothur', 'Kalakal', 'Shanbhag Nagar',
+  'Bargah', 'Chandole', 'Edlapadu', 'Guntur', 'Veeravalli',
+];
+
 const tid = (page: Page, testid: string) => page.getByTestId(testid);
 
 export interface Identity {
@@ -57,33 +66,69 @@ export interface Identity {
   designation: string;
 }
 
-/** Fill and submit the identity gate. */
+/** Fill and submit the identity gate (LEGACY phase 3-5 shape: employee w/ empid+designation). */
 export async function identify(page: Page, id: Identity) {
   await page.goto('/');
+  // Phase 6+ requires choosing employee first; tolerate both old and new UI.
+  const empToggle = page.getByTestId('person-kind-employee');
+  if (await empToggle.count()) { await empToggle.click(); }
   await tid(page, T.identityName).fill(id.name);
   await tid(page, T.identityEmpId).fill(id.empId);
-  await tid(page, T.identityDesignation).fill(id.designation);
+  const desig = page.getByTestId(T.identityDesignation);
+  if (await desig.count()) { await desig.fill(id.designation); }
+  const loc = page.getByTestId('identity-location');
+  if (await loc.count()) { await loc.selectOption({ index: 1 }); }
   await tid(page, T.identityContinue).click();
 }
 
-/** Fill the step-1 details form with sensible defaults (override as needed). */
+// ---- Phase 6 identity helpers -------------------------------------------
+export interface EmployeeIdentity {
+  name: string; empId: string; designation: string; location: string;
+}
+export interface NonEmployeeIdentity {
+  name: string; subType: 'CONTRACTOR' | 'VISITOR' | 'OTHER';
+  otherDesc?: string; location: string;
+}
+
+export async function identifyEmployee(page: Page, id: EmployeeIdentity) {
+  await page.goto('/');
+  await tid(page, 'person-kind-employee').click();
+  await tid(page, T.identityName).fill(id.name);
+  await tid(page, T.identityEmpId).fill(id.empId);
+  await tid(page, T.identityDesignation).fill(id.designation);
+  await tid(page, 'identity-location').selectOption(id.location);
+  await tid(page, T.identityContinue).click();
+}
+
+export async function identifyNonEmployee(page: Page, id: NonEmployeeIdentity) {
+  await page.goto('/');
+  await tid(page, 'person-kind-non-employee').click();
+  await tid(page, T.identityName).fill(id.name);
+  await tid(page, `nonemp-type-${id.subType}`).click();
+  if (id.subType === 'OTHER') {
+    await tid(page, 'nonemp-other-desc').fill(id.otherDesc || 'External auditor');
+  }
+  await tid(page, 'identity-location').selectOption(id.location);
+  await tid(page, T.identityContinue).click();
+}
+
+/** Fill the step-1 details form (phase 6 shape: no location/hod/reporter here). */
 export async function fillDetails(
   page: Page,
   opts: Partial<{
-    reportType: string; shift: string; category: string; severity: string;
-    location: string; date: string; time: string; description: string;
+    reportTypes: string[]; shift: string; category: string; severity: string;
+    date: string; time: string; description: string;
   }> = {}
 ) {
   const o = {
-    reportType: 'NEAR_MISS', shift: 'A', category: 'STAFF', severity: 'LOW',
-    location: 'Bay 3', date: '2026-07-16', time: '09:30',
+    reportTypes: ['NEAR_MISS'], shift: 'A', category: 'STAFF', severity: 'LOW',
+    date: '2026-07-16', time: '09:30',
     description: 'Loose cable near walkway', ...opts,
   };
-  await tid(page, T.reportType(o.reportType)).click();
+  for (const rt of o.reportTypes) { await tid(page, T.reportType(rt)).click(); }
   await tid(page, T.shift(o.shift)).click();
   await tid(page, T.category(o.category)).click();
   await tid(page, T.severity(o.severity)).click();
-  await tid(page, T.location).fill(o.location);
   await tid(page, T.eventDate).fill(o.date);
   await tid(page, T.eventTime).fill(o.time);
   await tid(page, T.description).fill(o.description);

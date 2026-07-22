@@ -1,5 +1,7 @@
 package com.company.ehs.dto;
 
+import com.company.ehs.domain.NonEmployeeType;
+import com.company.ehs.domain.PersonKind;
 import com.company.ehs.domain.ReportStatus;
 import com.company.ehs.domain.ReportType;
 import com.company.ehs.domain.ReporterCategory;
@@ -12,10 +14,13 @@ import java.util.List;
 /** Full report view returned by every report endpoint (includes the checklist). */
 public record ReportResponse(
         Long id,
+        PersonKind personKind,
         String employeeId,
         String employeeName,
         String designation,
-        ReportType reportType,
+        NonEmployeeType nonEmployeeType,
+        String nonEmployeeOtherDesc,
+        List<ReportType> reportTypes,
         Character shift,
         ReporterCategory reporterCategory,
         Severity severity,
@@ -24,8 +29,6 @@ public record ReportResponse(
         LocalTime eventTime,
         String reportDescription,
         String correctiveAction,
-        String hodComments,
-        String reporterName,
         ReportStatus status,
         LocalDateTime createdAt,
         LocalDateTime updatedAt,

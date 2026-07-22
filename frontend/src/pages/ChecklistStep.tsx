@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
+import { motion, useReducedMotion } from 'framer-motion'
 import {
   api,
   ApiError,
@@ -12,6 +13,8 @@ import {
 import { useReport } from '../ReportContext'
 import { ProgressHeader } from '../components/ProgressHeader'
 import { Toast } from '../components/Toast'
+import { PageTransition, Reveal, TapButton } from '../components/motion'
+import { VantaBackground } from '../components/VantaBackground'
 
 // Friendly section headers for the enum codes returned by the template.
 const SECTION_TITLES: Record<string, string> = {
@@ -135,28 +138,28 @@ function ChecklistForm({ report }: { report: ReportResponse }) {
 
   if (alreadySubmitted) {
     return (
-      <div className="app">
+      <PageTransition>
         <ProgressHeader current="checklist" />
         <div className="banner" data-testid="already-submitted">
           <p className="banner-title">This report has already been submitted.</p>
           <p className="banner-note">Nothing more to do here — you can start a new report.</p>
           <div className="actions">
-            <button
+            <TapButton
               type="button"
               data-testid="report-another"
               className="btn btn-primary"
               onClick={reportAnother}
             >
               Report another
-            </button>
+            </TapButton>
           </div>
         </div>
-      </div>
+      </PageTransition>
     )
   }
 
   return (
-    <div className="app">
+    <PageTransition>
       <ProgressHeader current="checklist" />
       <h1>Safety checklist</h1>
 
@@ -164,55 +167,57 @@ function ChecklistForm({ report }: { report: ReportResponse }) {
       {!sections && !loadError && <p className="muted">Loading checklist…</p>}
 
       {sections?.map((section) => (
-        <section key={section.section} className="check-section">
-          <h2 className="check-section-title">
-            {SECTION_TITLES[section.section] ?? section.section}
-          </h2>
-          <table className="check-table">
-            <tbody>
-              {section.items.map((item) => {
-                const answer = answers[item.code] ?? null
-                return (
-                  <tr
-                    key={item.code}
-                    className="check-row"
-                    data-testid={`checklist-${item.code}`}
-                  >
-                    <td className="check-label">{item.label}</td>
-                    <td className="check-toggles">
-                      <div className="toggle-group" role="group" aria-label={item.label}>
-                        <button
-                          type="button"
-                          data-testid={`checklist-${item.code}-yes`}
-                          className={'toggle toggle-yes' + (answer === 'YES' ? ' toggle-active' : '')}
-                          aria-pressed={answer === 'YES'}
-                          onClick={() => setAnswer(item.code, 'YES')}
-                        >
-                          YES
-                        </button>
-                        <button
-                          type="button"
-                          data-testid={`checklist-${item.code}-no`}
-                          className={'toggle toggle-no' + (answer === 'NO' ? ' toggle-active' : '')}
-                          aria-pressed={answer === 'NO'}
-                          onClick={() => setAnswer(item.code, 'NO')}
-                        >
-                          NO
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </section>
+        <Reveal key={section.section}>
+          <section className="check-section">
+            <h2 className="check-section-title">
+              {SECTION_TITLES[section.section] ?? section.section}
+            </h2>
+            <table className="check-table">
+              <tbody>
+                {section.items.map((item) => {
+                  const answer = answers[item.code] ?? null
+                  return (
+                    <tr
+                      key={item.code}
+                      className="check-row"
+                      data-testid={`checklist-${item.code}`}
+                    >
+                      <td className="check-label">{item.label}</td>
+                      <td className="check-toggles">
+                        <div className="toggle-group" role="group" aria-label={item.label}>
+                          <TapButton
+                            type="button"
+                            data-testid={`checklist-${item.code}-yes`}
+                            className={'toggle toggle-yes' + (answer === 'YES' ? ' toggle-active' : '')}
+                            aria-pressed={answer === 'YES'}
+                            onClick={() => setAnswer(item.code, 'YES')}
+                          >
+                            YES
+                          </TapButton>
+                          <TapButton
+                            type="button"
+                            data-testid={`checklist-${item.code}-no`}
+                            className={'toggle toggle-no' + (answer === 'NO' ? ' toggle-active' : '')}
+                            aria-pressed={answer === 'NO'}
+                            onClick={() => setAnswer(item.code, 'NO')}
+                          >
+                            NO
+                          </TapButton>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </section>
+        </Reveal>
       ))}
 
       {error && <p className="error">{error}</p>}
 
       <div className="actions">
-        <button
+        <TapButton
           type="button"
           data-testid="checklist-back"
           className="btn btn-secondary"
@@ -220,8 +225,8 @@ function ChecklistForm({ report }: { report: ReportResponse }) {
           onClick={handleBack}
         >
           Back
-        </button>
-        <button
+        </TapButton>
+        <TapButton
           type="button"
           data-testid="checklist-submit"
           className="btn btn-primary"
@@ -229,11 +234,11 @@ function ChecklistForm({ report }: { report: ReportResponse }) {
           onClick={handleSubmit}
         >
           Submit
-        </button>
+        </TapButton>
       </div>
 
       <Toast message={netError} variant="error" onDone={() => setNetError(null)} />
-    </div>
+    </PageTransition>
   )
 }
 
@@ -244,28 +249,36 @@ function Confirmation({
   report: ReportResponse
   onReportAnother: () => void
 }) {
+  const reduce = useReducedMotion()
   return (
-    <div className="app">
+    <PageTransition>
+      <VantaBackground />
       <div className="confirm" data-testid="confirm-screen">
-        <div className="confirm-check" aria-hidden="true">
+        <motion.div
+          className="confirm-check"
+          aria-hidden="true"
+          initial={reduce ? false : { scale: 0, rotate: -20 }}
+          animate={reduce ? undefined : { scale: 1, rotate: 0 }}
+          transition={{ type: 'spring', stiffness: 500, damping: 18, delay: 0.05 }}
+        >
           ✓
-        </div>
+        </motion.div>
         <h1 className="confirm-title">Report submitted</h1>
         <p className="confirm-lead">Thank you. Your safety report has been recorded.</p>
         <p className="confirm-ref">
           Reference: <strong data-testid="confirm-report-id">#{report.id}</strong>
         </p>
         <div className="actions">
-          <button
+          <TapButton
             type="button"
             data-testid="report-another"
             className="btn btn-primary"
             onClick={onReportAnother}
           >
             Report another
-          </button>
+          </TapButton>
         </div>
       </div>
-    </div>
+    </PageTransition>
   )
 }

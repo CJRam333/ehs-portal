@@ -15,6 +15,10 @@ export type Shift = 'A' | 'B' | 'C' | 'G'
 
 export type ReporterCategory = 'STAFF' | 'CONTRACTOR' | 'OTHER' | 'VISITOR'
 
+export type PersonKind = 'EMPLOYEE' | 'NON_EMPLOYEE'
+
+export type NonEmployeeType = 'CONTRACTOR' | 'VISITOR' | 'OTHER'
+
 export type Severity = 'HIGH' | 'MEDIUM' | 'LOW'
 
 export type ReportStatus = 'DRAFT' | 'SUBMITTED'
@@ -51,10 +55,13 @@ export interface ChecklistAnswerRequest {
 
 export interface ReportResponse {
   id: number
-  employeeId: string
+  personKind: PersonKind
+  employeeId: string | null
   employeeName: string
-  designation: string
-  reportType: ReportType | null
+  designation: string | null
+  nonEmployeeType: NonEmployeeType | null
+  nonEmployeeOtherDesc: string | null
+  reportTypes: ReportType[]
   shift: Shift | null
   reporterCategory: ReporterCategory | null
   severity: Severity | null
@@ -63,18 +70,22 @@ export interface ReportResponse {
   eventTime: string | null // HH:MM[:SS]
   reportDescription: string | null
   correctiveAction: string | null
-  hodComments: string | null
-  reporterName: string | null
   status: ReportStatus
   createdAt: string
   updatedAt: string
   checklist: ChecklistItemResponse[]
 }
 
+// Employees supply employeeId/designation; non-employees supply
+// nonEmployeeType (+ nonEmployeeOtherDesc when OTHER). Location is for everyone.
 export interface IdentifyRequest {
+  personKind: PersonKind
   name: string
-  employeeId: string
-  designation: string
+  employeeId?: string | null
+  designation?: string | null
+  nonEmployeeType?: NonEmployeeType | null
+  nonEmployeeOtherDesc?: string | null
+  location?: string | null
 }
 
 export interface IdentifyResponse {
@@ -84,24 +95,25 @@ export interface IdentifyResponse {
 }
 
 export interface CreateReportRequest {
+  personKind: PersonKind
   name: string
-  employeeId: string
-  designation: string
+  employeeId?: string | null
+  designation?: string | null
+  nonEmployeeType?: NonEmployeeType | null
+  nonEmployeeOtherDesc?: string | null
+  location: string
 }
 
 // All fields optional: the same payload backs both "Save" (partial) and "Next".
 export interface DetailsRequest {
-  reportType?: ReportType | null
+  reportTypes?: ReportType[]
   shift?: Shift | null
   reporterCategory?: ReporterCategory | null
   severity?: Severity | null
-  location?: string | null
   eventDate?: string | null
   eventTime?: string | null
   reportDescription?: string | null
   correctiveAction?: string | null
-  hodComments?: string | null
-  reporterName?: string | null
 }
 
 export class ApiError extends Error {

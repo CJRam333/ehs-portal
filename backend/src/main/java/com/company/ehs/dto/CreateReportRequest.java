@@ -1,27 +1,20 @@
 package com.company.ehs.dto;
 
-import com.company.ehs.domain.ReportType;
-import com.company.ehs.domain.ReporterCategory;
-import com.company.ehs.domain.Severity;
+import com.company.ehs.domain.NonEmployeeType;
+import com.company.ehs.domain.PersonKind;
 import jakarta.validation.constraints.NotBlank;
-import java.time.LocalDate;
-import java.time.LocalTime;
 
 /**
- * Body of {@code POST /api/reports}: the reporter identity (required) plus any
- * optional Step-1 fields already known at creation time.
+ * Body of {@code POST /api/reports}: the reporter identity captured on the
+ * first screen. Location is required for everyone; employee id / designation
+ * apply only to employees, sub-type only to non-employees.
  */
 public record CreateReportRequest(
+        PersonKind personKind,
         @NotBlank String name,
-        @NotBlank String employeeId,
-        @NotBlank String designation,
-        ReportType reportType,
-        String shift,
-        ReporterCategory reporterCategory,
-        Severity severity,
-        String location,
-        LocalDate eventDate,
-        LocalTime eventTime,
-        String reportDescription,
-        String correctiveAction) {
+        String employeeId,
+        String designation,
+        NonEmployeeType nonEmployeeType,
+        String nonEmployeeOtherDesc,
+        @NotBlank String location) {
 }

@@ -1,0 +1,41 @@
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.5)
+
+2026-07-22T16:35:29.733+05:30  INFO 21760 --- [           main] com.company.ehs.EhsApplication           : Starting EhsApplication v0.0.1-SNAPSHOT using Java 21.0.7 with PID 21760 (E:\CJR_Projects\ehs-portal\backend\target\ehs-portal-backend-0.0.1-SNAPSHOT.jar started by ramesh.a in E:\CJR_Projects\ehs-portal\backend)
+2026-07-22T16:35:29.738+05:30  INFO 21760 --- [           main] com.company.ehs.EhsApplication           : No active profile set, falling back to 1 default profile: "default"
+2026-07-22T16:35:31.090+05:30  INFO 21760 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-07-22T16:35:31.189+05:30  INFO 21760 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 87 ms. Found 2 JPA repository interfaces.
+2026-07-22T16:35:33.042+05:30  INFO 21760 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2026-07-22T16:35:33.106+05:30  INFO 21760 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-07-22T16:35:33.107+05:30  INFO 21760 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.31]
+2026-07-22T16:35:33.276+05:30  INFO 21760 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-07-22T16:35:33.280+05:30  INFO 21760 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 3443 ms
+2026-07-22T16:35:35.131+05:30  INFO 21760 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-07-22T16:35:36.268+05:30  INFO 21760 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@78c262ba
+2026-07-22T16:35:36.276+05:30  INFO 21760 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-07-22T16:35:36.566+05:30  INFO 21760 --- [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:mysql://127.0.0.1:3306/ehs (MySQL 8.0)
+2026-07-22T16:35:37.168+05:30  INFO 21760 --- [           main] o.f.core.internal.command.DbValidate     : Successfully validated 2 migrations (execution time 00:00.176s)
+2026-07-22T16:35:37.258+05:30  INFO 21760 --- [           main] o.f.core.internal.command.DbMigrate      : Current version of schema `ehs`: 1
+2026-07-22T16:35:37.359+05:30  INFO 21760 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema `ehs` to version "2 - phase6 changes"
+2026-07-22T16:35:38.163+05:30  INFO 21760 --- [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 1 migration to schema `ehs`, now at version v2 (execution time 00:00.736s)
+2026-07-22T16:35:38.573+05:30  INFO 21760 --- [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-07-22T16:35:38.856+05:30  INFO 21760 --- [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.5.3.Final
+2026-07-22T16:35:39.017+05:30  INFO 21760 --- [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-07-22T16:35:40.469+05:30  INFO 21760 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-07-22T16:35:40.713+05:30  WARN 21760 --- [           main] org.hibernate.orm.deprecation            : HHH90000025: MySQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-07-22T16:35:43.948+05:30  INFO 21760 --- [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-07-22T16:35:44.039+05:30  INFO 21760 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-07-22T16:35:45.682+05:30  WARN 21760 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-07-22T16:35:45.770+05:30  INFO 21760 --- [           main] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2026-07-22T16:35:47.469+05:30  INFO 21760 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2026-07-22T16:35:47.542+05:30  INFO 21760 --- [           main] com.company.ehs.EhsApplication           : Started EhsApplication in 18.458 seconds (process running for 19.222)
+2026-07-22T16:35:49.222+05:30  INFO 21760 --- [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-07-22T16:35:49.222+05:30  INFO 21760 --- [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-07-22T16:35:49.224+05:30  INFO 21760 --- [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
