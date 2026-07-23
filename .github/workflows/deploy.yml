@@ -45,20 +45,18 @@ jobs:
           # Find the built jar (exclude the *.original that Spring Boot leaves).
           JAR=$(ls backend/target/*.jar | grep -v '\.original$' | head -1)
           echo "Deploying $JAR"
-          sudo install -o nsl -g nsl -m 644 "$JAR" /opt/ehs-portal/ehs-portal.jar
-          sudo systemctl restart ehs-portal
-          # Give it a moment, then confirm it's active.
-          sleep 8
-          sudo systemctl is-active --quiet ehs-portal && echo "ehs-portal is running" || (echo "service failed to start"; sudo journalctl -u ehs-portal -n 40 --no-pager; exit 1)
+          sudo /usr/bin/install -o nsl -g nsl -m 644 "$JAR" /opt/ehs-portal/ehs-portal.jar
+          sudo /usr/bin/systemctl restart ehs-portal
+          echo "Restart issued; waiting for the app to come up."
 
       - name: Smoke test
         run: |
-          for i in $(seq 1 20); do
+          for i in $(seq 1 30); do
             if curl -sf http://127.0.0.1:8081/api/checklist-template >/dev/null; then
-              echo "Smoke test passed"; exit 0
+              echo "Smoke test passed - app is up on 8081"; exit 0
             fi
             sleep 3
           done
           echo "Smoke test failed - app not responding on 8081"
-          sudo journalctl -u ehs-portal -n 40 --no-pager
+          sudo /usr/bin/journalctl -u ehs-portal -n 50 --no-pager || true
           exit 1
