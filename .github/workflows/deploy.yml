@@ -1,0 +1,64 @@
+name: Deploy EHS Portal
+
+# Deploys on every push to main. Runs on the self-hosted runner, which lives
+# ON the target server, so "deploy" is just build + copy + restart locally.
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: {}   # allows manual runs from the Actions tab
+
+concurrency:
+  group: ehs-deploy
+  cancel-in-progress: false   # don't interrupt a deploy mid-restart
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Transient Node just for this job (not installed system-wide).
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Bundle frontend into backend static
+        run: |
+          rm -rf backend/src/main/resources/static
+          mkdir -p backend/src/main/resources/static
+          cp -r frontend/dist/* backend/src/main/resources/static/
+
+      - name: Build backend jar
+        working-directory: backend
+        run: mvn -B -DskipTests clean package
+
+      - name: Deploy jar and restart service
+        run: |
+          # Find the built jar (exclude the *.original that Spring Boot leaves).
+          JAR=$(ls backend/target/*.jar | grep -v '\.original$' | head -1)
+          echo "Deploying $JAR"
+          sudo install -o nsl -g nsl -m 644 "$JAR" /opt/ehs-portal/ehs-portal.jar
+          sudo systemctl restart ehs-portal
+          # Give it a moment, then confirm it's active.
+          sleep 8
+          sudo systemctl is-active --quiet ehs-portal && echo "ehs-portal is running" || (echo "service failed to start"; sudo journalctl -u ehs-portal -n 40 --no-pager; exit 1)
+
+      - name: Smoke test
+        run: |
+          for i in $(seq 1 20); do
+            if curl -sf http://127.0.0.1:8081/api/checklist-template >/dev/null; then
+              echo "Smoke test passed"; exit 0
+            fi
+            sleep 3
+          done
+          echo "Smoke test failed - app not responding on 8081"
+          sudo journalctl -u ehs-portal -n 40 --no-pager
+          exit 1
